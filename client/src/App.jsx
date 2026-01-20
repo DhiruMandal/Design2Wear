@@ -11,6 +11,7 @@ import Customize from "./pages/Customize"
 import AdminDashboard from "./admin/AdminDashboard"
 import UploadJersey from "./admin/UploadJersey"
 import AdminRoute from "./auth/AdminRoute"
+import VerifyOtp from "./pages/VerifyOtp";
 
 export default function App() {
   return (
@@ -25,7 +26,8 @@ export default function App() {
         <Route path="/customize" element={<Customize />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        
+        <Route path="/verify-otp" element={<VerifyOtp />} /> 
         {/* ADMIN ROUTES (Protected) */}
         <Route
           path="/admin"

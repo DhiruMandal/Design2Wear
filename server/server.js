@@ -1,19 +1,34 @@
-import express from "express"
-import cors from "cors"
-import connectDB from "./config/db.js"
-import productRoutes from "./routes/productRoutes.js"
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const app = express()
+import authRoutes from "./routes/authRoutes.js";
 
-connectDB()
+dotenv.config();
 
-app.use(cors())
-app.use(express.json())
-app.use("/uploads", express.static("uploads"))
+const app = express();
 
-app.use("/api/products", productRoutes)
+/* MIDDLEWARE */
+app.use(cors());
+app.use(express.json());
 
-const PORT = 5000
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-)
+/* ROUTES */
+app.use("/api/auth", authRoutes);
+
+/* TEST ROUTE */
+app.get("/", (req, res) => {
+  res.send("Design2Wear API Running");
+});
+
+/* DB */
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log(err));
+
+/* SERVER */
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
