@@ -1,53 +1,39 @@
-import { Routes, Route } from "react-router-dom"
-import Navbar from "./components/Navbar"
-import Footer from "./components/Footer"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 
 import Home from "./pages/Home"
-import Products from "./pages/Products"
 import Login from "./pages/Login"
+import Dashboard from "./pages/admin/Dashboard"
+import ProtectedRoute from "./components/ProtectedRoute"
 import Register from "./pages/Register"
-import Customize from "./pages/Customize"
-
-import AdminDashboard from "./admin/AdminDashboard"
-import UploadJersey from "./admin/UploadJersey"
-import AdminRoute from "./auth/AdminRoute"
-import VerifyOtp from "./pages/VerifyOtp";
+import Products from "./pages/Products"
+// TEMP PAGES (avoid white screen)
+const Services = () => <Home />
+const Contact = () => <Home />
 
 export default function App() {
   return (
-    <>
-      {/* USER LAYOUT */}
-      <Navbar />
-
+    <BrowserRouter>
       <Routes>
-        {/* User Routes */}
+        {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/customize" element={<Customize />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/register" element={<Register />} />
-        
-        <Route path="/verify-otp" element={<VerifyOtp />} /> 
-        {/* ADMIN ROUTES (Protected) */}
+        <Route path="/products" element={<Products />} />
+        {/* ADMIN ROUTE */}
         <Route
           path="/admin"
           element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
+            <ProtectedRoute role="admin">
+              <Dashboard />
+            </ProtectedRoute>
           }
         />
-        <Route
-          path="/admin/upload"
-          element={
-            <AdminRoute>
-              <UploadJersey />
-            </AdminRoute>
-          }
-        />
-      </Routes>
 
-      <Footer />
-    </>
+        {/* FALLBACK */}
+        <Route path="*" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   )
 }

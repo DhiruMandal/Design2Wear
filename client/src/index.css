@@ -5,5 +5,5 @@
   @apply w-full mb-3 p-2 border rounded;
 }
 body {
-  background-color: #a0aecd;
+  @apply bg-gradient-to-r from-black to-gray-900 min-h-screen;
 }

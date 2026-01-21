@@ -1,20 +1,22 @@
-import { Link } from "react-router-dom"
+import AdminLayout from "../../components/admin/AdminLayout"
 
-const Dashboard = () => {
+export default function Dashboard() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-
-      <div className="space-x-4">
-        <Link to="/admin/add-product" className="bg-black text-white px-4 py-2">
-          Add Product
-        </Link>
-        <Link to="/admin/orders" className="bg-gray-700 text-white px-4 py-2">
-          Manage Orders
-        </Link>
+    <AdminLayout>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard title="Total Services" value="6" />
+        <StatCard title="Orders" value="120" />
+        <StatCard title="Revenue" value="₹45,000" />
       </div>
-    </div>
+    </AdminLayout>
   )
 }
 
-export default Dashboard
+function StatCard({ title, value }) {
+  return (
+    <div className="bg-white rounded-xl shadow p-6">
+      <p className="text-gray-500">{title}</p>
+      <h2 className="text-3xl font-bold mt-2">{value}</h2>
+    </div>
+  )
+}

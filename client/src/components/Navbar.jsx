@@ -1,41 +1,17 @@
-import { NavLink, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 export default function Navbar() {
-  const navLinkClass = ({ isActive }) =>
-    `px-3 py-1 rounded transition font-medium ${
-      isActive
-        ? "bg-[#bcfd4c] text-black"
-        : "text-black hover:bg-[#bcfd4c]"
-    }`
-
   return (
-    <nav className="bg-[#a0aecd] px-8 py-4 flex justify-between items-center shadow-md">
-      {/* Logo */}
-      <Link to="/" className="text-2xl font-bold text-black">
+    <nav className="bg-gradient-to-r from-black to-gray-900 text-white px-8 py-4 flex justify-between items-center">
+      <Link to="/" className="text-2xl font-bold text-orange-500">
         Design2Wear
       </Link>
 
-      {/* Links */}
-      <div className="flex gap-4">
-        <NavLink to="/" className={navLinkClass}>
-          Home
-        </NavLink>
-
-        <NavLink to="/products" className={navLinkClass}>
-          Products
-        </NavLink>
-
-        <NavLink to="/login" className={navLinkClass}>
-          Login
-        </NavLink>
-
-        <NavLink to="/register" className={navLinkClass}>
-          Register
-        </NavLink>
-
-        <NavLink to="/customize" className={navLinkClass}>
-          Customize
-        </NavLink>
+      <div className="space-x-6 hidden md:block">
+        <Link className="hover:text-orange-400" to="/">Home</Link>
+        <Link className="hover:text-orange-400" to="/products">Products</Link>
+        <Link className="hover:text-orange-400" to="/contact">Contact</Link>
+        <Link className="hover:text-orange-400" to="/login">Login</Link>
       </div>
     </nav>
   )

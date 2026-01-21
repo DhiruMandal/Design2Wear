@@ -1,144 +1,107 @@
-import User from "../models/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import sendOtp from "../utils/sendOTP_temp.js";
+import User from "../models/User.js"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import nodemailer from "nodemailer"
 
-/* ================= REGISTER ================= */
-const registerUser = async (req, res) => {
+// 📌 Email config (Gmail)
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+})
+
+// 🔐 REGISTER
+export const register = async (req, res) => {
   try {
-    const {
-      fullName,
-      mobile,
-      address,
-      email,
-      password,
-      confirmPassword,
-    } = req.body;
+    const { fullName, email, password, mobile, address } = req.body
 
-    // 1. Validate fields
-    if (!fullName || !mobile || !address || !email || !password || !confirmPassword) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
-    }
-
-    // 2. Check existing user
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email })
     if (existingUser) {
-      return res.status(400).json({ message: "Email already registered" });
+      return res.status(400).json({ message: "User already exists" })
     }
 
-    // 3. Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const otp = Math.floor(100000 + Math.random() * 900000)
+    const otpExpires = Date.now() + 10 * 60 * 1000
 
-    // 4. Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // 5. Create user
-    await User.create({
+    const user = await User.create({
       fullName,
+      email,
       mobile,
       address,
-      email,
       password: hashedPassword,
       otp,
-      otpExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
-      isVerified: false,
-      role: "user", // default role
-    });
+      otpExpires,
+    })
 
-    // 6. Send OTP email
-    await sendOtp(email, otp);
+    await transporter.sendMail({
+      to: email,
+      subject: "Design2Wear OTP Verification",
+      html: `<h3>Your OTP is: <b>${otp}</b></h3>`,
+    })
 
     res.status(201).json({
-      message: "Registration successful. OTP sent to your email.",
-    });
+      message: "OTP sent to email",
+      userId: user._id,
+    })
   } catch (error) {
-    console.error("Register Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message })
   }
-};
+}
 
-/* ================= VERIFY OTP ================= */
-const verifyOtp = async (req, res) => {
+// ✅ VERIFY OTP
+export const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { userId, otp } = req.body
 
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Email and OTP are required" });
+    const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ message: "User not found" })
+
+    if (user.otp !== otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" })
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    user.isVerified = true
+    user.otp = undefined
+    user.otpExpires = undefined
+    await user.save()
 
-    if (user.isVerified) {
-      return res.status(400).json({ message: "User already verified" });
-    }
-
-    if (!user.otp || user.otp !== otp || user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
-
-    user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpires = undefined;
-    await user.save();
-
-    res.json({ message: "Email verified successfully" });
+    res.json({ message: "Account verified successfully" })
   } catch (error) {
-    console.error("OTP Verify Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message })
   }
-};
+}
 
-/* ================= LOGIN ================= */
-const loginUser = async (req, res) => {
+// 🔑 LOGIN
+export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    const user = await User.findOne({ email })
+    if (!user) return res.status(400).json({ message: "Invalid credentials" })
 
     if (!user.isVerified) {
-      return res.status(403).json({ message: "Please verify your email first" });
+      return res.status(403).json({ message: "Verify your email first" })
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials" })
     }
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
-    );
+    )
 
     res.json({
-      message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-      },
-    });
+      role: user.role,
+    })
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message })
   }
-};
-
-/* ================= EXPORTS ================= */
-export { registerUser, verifyOtp, loginUser };
+}
