@@ -6,6 +6,7 @@ import Dashboard from "./pages/admin/Dashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Register from "./pages/Register"
 import Products from "./pages/Products"
+import VerifyOtp from "./pages/VerifyOtp"
 // TEMP PAGES (avoid white screen)
 const Services = () => <Home />
 const Contact = () => <Home />
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} /> 
         {/* ADMIN ROUTE */}
         <Route
           path="/admin"

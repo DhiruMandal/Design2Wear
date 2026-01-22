@@ -3,9 +3,10 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import nodemailer from "nodemailer"
 
-// 📌 Email config (Gmail)
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -37,9 +38,10 @@ export const register = async (req, res) => {
     })
 
     await transporter.sendMail({
+      from: `"Design2Wear" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Design2Wear OTP Verification",
-      html: `<h3>Your OTP is: <b>${otp}</b></h3>`,
+      html: `<h2>Your OTP is <b>${otp}</b></h2>`,
     })
 
     res.status(201).json({
